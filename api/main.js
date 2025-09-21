@@ -1,10 +1,11 @@
+// main.js
 import express from "express";
 import multer from "multer";
 import OpenAI from "openai";
 import Levenshtein from "levenshtein";
 import dotenv from "dotenv";
 import { logStep } from "../utils/logger.js";
-
+ 
 dotenv.config();
 const router = express.Router();
 const upload = multer(); // simpan file di memory
