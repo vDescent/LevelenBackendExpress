@@ -1,8 +1,7 @@
-// api/transcribe.js
 import express from "express";
 import multer from "multer";
 import OpenAI from "openai";
-import Levenshtein from "levenshtein";
+import levenshtein from "fast-levenshtein"; // ganti biar aman di ESM
 
 const app = express();
 const upload = multer();
@@ -28,21 +27,27 @@ app.post("/", upload.single("audio"), async (req, res) => {
 
     const result = await client.audio.transcriptions.create({
       model: "whisper-1",
-      file: req.file.buffer,   // ✅ buffer langsung
+      file: req.file.buffer,
       prompt: "English only transcription"
     });
 
     const transcribed = result.text.trim();
     const qNorm = normalizeText(req.body.question);
     const tNorm = normalizeText(transcribed);
-    const similarity = new Levenshtein(qNorm, tNorm).distance;
+
+    const distance = levenshtein.get(qNorm, tNorm);
     const similarityPercent = Math.round(
-      ((1 - similarity / Math.max(qNorm.length, tNorm.length)) * 100) * 100
+      ((1 - distance / Math.max(qNorm.length, tNorm.length)) * 100) * 100
     ) / 100;
+
     const score = calculateScore(similarityPercent);
 
-    res.json({ question: req.body.question, text: transcribed, similarity: similarityPercent, score });
-
+    res.json({
+      question: req.body.question,
+      text: transcribed,
+      similarity: similarityPercent,
+      score
+    });
   } catch (err) {
     console.error("❌ Server error:", err);
     res.status(500).json({ error: err.message });
