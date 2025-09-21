@@ -4,9 +4,9 @@ import OpenAI from "openai";
 import levenshtein from "fast-levenshtein";
 import { Readable } from "stream";
 
-const app = express();
-const upload = multer({ storage: multer.memoryStorage() });
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// const app = express();
+// const upload = multer({ storage: multer.memoryStorage() });
+// const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // function bufferToStream(buffer) {
 //   const readable = new Readable();
@@ -64,6 +64,11 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // export default app;
 
-export default function handler(req, res) {
-  res.status(200).json({ message: "Hello World from Vercel API!" });
-}
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Hello World from Express on Vercel!");
+});
+
+module.exports = app; // penting untuk vercel
