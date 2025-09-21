@@ -1,15 +1,24 @@
 import express from "express";
 import multer from "multer";
 import OpenAI from "openai";
-import levenshtein from "fast-levenshtein"; // ganti biar aman di ESM
+import levenshtein from "fast-levenshtein";
+import { Readable } from "stream";
 
 const app = express();
-const upload = multer();
+const upload = multer({ storage: multer.memoryStorage() });
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+function bufferToStream(buffer) {
+  const readable = new Readable();
+  readable.push(buffer);
+  readable.push(null);
+  return readable;
+}
 
 function normalizeText(text) {
   return text.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
+
 function calculateScore(p) {
   if (p < 50) return 0;
   if (p < 60) return 5;
@@ -27,8 +36,8 @@ app.post("/", upload.single("audio"), async (req, res) => {
 
     const result = await client.audio.transcriptions.create({
       model: "whisper-1",
-      file: req.file.buffer,
-      prompt: "English only transcription"
+      file: bufferToStream(req.file.buffer),
+      prompt: "English only transcription",
     });
 
     const transcribed = result.text.trim();
@@ -36,9 +45,8 @@ app.post("/", upload.single("audio"), async (req, res) => {
     const tNorm = normalizeText(transcribed);
 
     const distance = levenshtein.get(qNorm, tNorm);
-    const similarityPercent = Math.round(
-      ((1 - distance / Math.max(qNorm.length, tNorm.length)) * 100) * 100
-    ) / 100;
+    const similarityPercent =
+      Math.round((1 - distance / Math.max(qNorm.length, tNorm.length)) * 10000) / 100;
 
     const score = calculateScore(similarityPercent);
 
@@ -46,7 +54,7 @@ app.post("/", upload.single("audio"), async (req, res) => {
       question: req.body.question,
       text: transcribed,
       similarity: similarityPercent,
-      score
+      score,
     });
   } catch (err) {
     console.error("❌ Server error:", err);
