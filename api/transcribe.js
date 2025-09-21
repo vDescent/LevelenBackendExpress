@@ -34,10 +34,17 @@ app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
     const audioBuffer = req.file.buffer;
 
     // 👉 di Node.js, jangan pakai new File()
+    // const result = await client.audio.transcriptions.create({
+    //   model: "whisper-1",
+    //   file: audioBuffer,
+    //   prompt: "English only transcription",
+    // });
+
+    // perbaikan ✅
     const result = await client.audio.transcriptions.create({
       model: "whisper-1",
-      file: audioBuffer,
-      prompt: "English only transcription",
+      file: audioBuffer,  // langsung buffer dari multer
+      prompt: "English only transcription"
     });
 
     const transcribed = result.text.trim();
