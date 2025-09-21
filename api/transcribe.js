@@ -30,36 +30,37 @@ function calculateScore(p) {
 }
 
 app.post("/", upload.single("audio"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: "No audio file" });
-    if (!req.body.question) return res.status(400).json({ error: "No question" });
+  res.json({ hello: "world" });
+  // try {
+  //   if (!req.file) return res.status(400).json({ error: "No audio file" });
+  //   if (!req.body.question) return res.status(400).json({ error: "No question" });
 
-    const result = await client.audio.transcriptions.create({
-      model: "whisper-1",
-      file: bufferToStream(req.file.buffer),
-      prompt: "English only transcription",
-    });
+  //   const result = await client.audio.transcriptions.create({
+  //     model: "whisper-1",
+  //     file: bufferToStream(req.file.buffer),
+  //     prompt: "English only transcription",
+  //   });
 
-    const transcribed = result.text.trim();
-    const qNorm = normalizeText(req.body.question);
-    const tNorm = normalizeText(transcribed);
+  //   const transcribed = result.text.trim();
+  //   const qNorm = normalizeText(req.body.question);
+  //   const tNorm = normalizeText(transcribed);
 
-    const distance = levenshtein.get(qNorm, tNorm);
-    const similarityPercent =
-      Math.round((1 - distance / Math.max(qNorm.length, tNorm.length)) * 10000) / 100;
+  //   const distance = levenshtein.get(qNorm, tNorm);
+  //   const similarityPercent =
+  //     Math.round((1 - distance / Math.max(qNorm.length, tNorm.length)) * 10000) / 100;
 
-    const score = calculateScore(similarityPercent);
+  //   const score = calculateScore(similarityPercent);
 
-    res.json({
-      question: req.body.question,
-      text: transcribed,
-      similarity: similarityPercent,
-      score,
-    });
-  } catch (err) {
-    console.error("❌ Server error:", err);
-    res.status(500).json({ error: err.message });
-  }
+  //   res.json({
+  //     question: req.body.question,
+  //     text: transcribed,
+  //     similarity: similarityPercent,
+  //     score,
+  //   });
+  // } catch (err) {
+  //   console.error("❌ Server error:", err);
+  //   res.status(500).json({ error: err.message });
+  // }
 });
 
 export default app;
