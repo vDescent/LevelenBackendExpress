@@ -21,7 +21,7 @@ function calculateScore(p) {
   return 10;
 }
 
-app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
+app.post("/", upload.single("audio"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No audio file" });
     if (!req.body.question) return res.status(400).json({ error: "No question" });
